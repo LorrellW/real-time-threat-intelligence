@@ -1,0 +1,26 @@
+NIST Cybersecurity Framework & Risk Management Framework Summary
+
+1. NIST Cybersecurity Framework 2.0:
+
+Purpose: Provides a policy framework for private sector organizations to assess and improve their ability to prevent, detect, and respond to cyber attacks.
+Core Functions: Identify, Protect, Detect, Respond, and Recover.
+Key Takeaways:
+Emphasizes risk-based decision making.
+Encourages continuous improvement in cybersecurity practices.
+Provides guidelines that can be tailored to the size and complexity of an organization.
+
+
+2. NIST SP 800-37 Risk Management Framework (RMF):
+
+Purpose: Offers a structured process for integrating security and risk management activities into the system development life cycle.
+Core Steps:
+Categorize the system and information.
+Select appropriate security controls.
+Implement the controls.
+Assess the controls for effectiveness.
+Authorize system operation based on risk posture.
+Monitor security controls continuously.
+Key Takeaways:
+Focuses on establishing a dynamic, ongoing process rather than a one-time compliance task.
+Promotes a balance between security requirements and operational needs.
+Provides a systematic approach to risk management that helps organizations prioritize resources.
