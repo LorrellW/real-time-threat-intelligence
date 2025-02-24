@@ -1,0 +1,23 @@
+Technology Stack Selection
+
+For the real-time threat intelligence system, I've chosen the following technology stack:
+
+- Back-End -
+Framework: Flask (Python)
+Rationale: Lightweight, easy to integrate with various APIs, and well-suited for rapid development.
+
+- Front-End -
+Framework: React
+Rationale: Robust UI library that enables the creation of a responsive, real-time dashboard.
+Database:
+
+Option: PostgreSQL
+Rationale: Relational database offering strong consistency and support for complex queries. (Alternatively, MongoDB can be considered for flexibility with unstructured data.)
+OSINT API Integrations:
+
+Tools: Shodan, Have I Been Pwned, VirusTotal
+Rationale: These services offer reliable API access for detecting exposed services, checking for breached credentials, and assessing malware/domain reputation.
+LLM Model for Risk Scoring:
+
+Option: OpenAI GPT-4 API
+Rationale: Provides advanced language understanding for analyzing threat data and supporting risk evaluation.
