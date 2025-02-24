@@ -1,0 +1,58 @@
+OSINT Research Report
+
+Shodan:
+Purpose: Detects exposed services and devices on the internet.
+Integration: Utilize the Shodan API to periodically scan IP addresses and aggregate exposure data.
+API Access: RESTful API; authentication via API key.
+
+Have I Been Pwned:
+Purpose: Checks for breached credentials and data exposures.
+Integration: Use the API to cross-reference email addresses and domains against known breaches.
+API Access: RESTful API; rate limits apply.
+
+VirusTotal:
+Purpose: Provides malware and domain reputation analysis.
+Integration: Implement API calls to fetch scan reports for files, URLs, and domains in real time.
+API Access: REST API with public and premium endpoints.
+
+SecurityTrails:
+Purpose: Offers domain and IP intelligence.
+Integration: Use API to gather DNS records, historical data, and other relevant domain information.
+API Access: API key required; detailed documentation available.
+
+theHarvester:
+Purpose: Collects emails, subdomains, hosts, and open ports.
+Integration: Though primarily a command-line tool, results can be parsed and imported into our system via scripts.
+API Access: Local execution with output integration.
+
+IntelOwl:
+Purpose: Aggregates threat intelligence data from multiple sources.
+Integration: Deploy as an internal aggregator with API endpoints that feed into our dashboard.
+API Access: RESTful API; customizable for internal use.
+
+Recon-ng & Maltego:
+Purpose: Offer web reconnaissance and graphical link analysis respectively.
+Integration: Use as supplementary tools for in-depth investigations, with data feeds manually reviewed before integration.
+API Access: Varies; some features via API or custom scripts.
+
+Censys:
+Purpose: Conducts internet-wide scan data analysis.
+Integration: Leverage the Censys API to gather certificate, host, and network infrastructure data.
+API Access: Requires registration and API key.
+
+Hunter.io:
+Purpose: Finds email addresses and contact details across domains.
+Integration: Integrate API calls to verify and enrich contact data for threat actor profiling.
+API Access: REST API; usage based on quota.
+
+ANY.RUN:
+Purpose: Provides interactive malware analysis.
+Integration: Utilize API to retrieve analysis reports and incorporate indicators of compromise (IOCs) into the system.
+API Access: API available for automated retrieval of analysis data.
+
+Integration Strategy:
+
+API Management: All selected tools offer RESTful APIs (or command-line interfaces that can be scripted) that allow for seamless integration.
+Data Aggregation: Data fetched from these tools will be normalized and stored in our database to support real-time analysis and risk scoring.
+Dashboard Integration: The front-end (React) will present aggregated OSINT data in a user-friendly dashboard, enabling actionable insights.
+Rate Limiting & Authentication: Each API’s authentication methods (e.g., API keys) and rate limits will be managed through our back-end (Flask) to ensure robust and reliable data retrieval.
