@@ -1,5 +1,6 @@
 import type { MetaFunction } from "@remix-run/node";
 import modal from "@remix-run/dev"
+import ThreatDashboard from "~/components/ThreatDashboard";
 
 export const meta: MetaFunction = () => {
   return [
@@ -9,30 +10,10 @@ export const meta: MetaFunction = () => {
 };
 
 export default function Index() {
-  return (
-    <div className="flex h-screen items-center justify-center">
-      <div className="flex flex-col items-center gap-16">
-        <header className="flex flex-col items-center gap-9">
-          <h1 className="leading text-5xl font-bold text-gray-800 dark:text-gray-100">
-            Real Time Threat Intelligence
-          </h1>
-        </header>
+  return (    
+    <ThreatDashboard/>  
 
-        <form name="Login Form" className="flex flex-col justify-center gap-4 rounded-3xl border border-gray-200 p-6 dark:border-gray-700">
-          
-          <input className="text-black bg-gray-300 rounded-md" placeholder=" Email"></input>
-          <input className="text-black bg-gray-300 rounded-md" placeholder=" Password"></input>
-          <div className="flex justify-between">
-          <button className=" bg-blue-600 min-w-24 rounded-lg leading-6 text-gray-700 dark:text-gray-200">
-            Login
-          </button>
-          <button className=" bg-blue-600 min-w-24 rounded-lg leading-6 text-gray-700 dark:text-gray-200" onClick={Number}>
-            Signup
-          </button>
-          </div>
-        </form>
-      </div>
-    </div>
+
   );
 }
 
