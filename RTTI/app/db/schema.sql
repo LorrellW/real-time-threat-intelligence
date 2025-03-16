@@ -29,6 +29,11 @@ CREATE TABLE threats (
   risk_level INT CHECK (risk_level BETWEEN 1 AND 10)
 );
 
+ALTER TABLE threats
+ADD COLUMN likelihood INT CHECK (likelihood BETWEEN 1 AND 5),
+ADD COLUMN impact INT CHECK (impact BETWEEN 1 AND 5),
+ADD COLUMN risk_score INT GENERATED ALWAYS AS (likelihood * impact) STORED;
+
 -- Optionally, add tables for vulnerabilities and risk ratings:
 CREATE TABLE vulnerabilities (
   id SERIAL PRIMARY KEY,
