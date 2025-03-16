@@ -1,4 +1,11 @@
+import openai
 import psycopg2
+import os
+from dotenv import load_dotenv
+
+# Load API keys from .env file
+load_dotenv()
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
 # PostgreSQL connection details
 DB_PARAMS = {
@@ -9,37 +16,58 @@ DB_PARAMS = {
     "port": "5432",
 }
 
-# Define Likelihood and Impact values based on threat type
-THREAT_RISK_MAP = {
-    "SQL Injection": (4, 5),
-    "Phishing Attack": (5, 3),
-    "Exposed Ports": (3, 4),
-    "DDoS Attack": (5, 5),
-    "Malware Infection": (4, 4),
-}
+# OpenAI API configuration
+openai.api_key = OPENAI_API_KEY
 
-# Function to assign risk scores
-def assign_risk_scores():
+# Function to generate risk scores using GPT-4
+def get_ai_risk_score(threat_name):
+    prompt = f"""
+    You are a cybersecurity expert. Analyze the following threat: "{threat_name}".
+    Assign:
+    - Likelihood (L) from 1 (low) to 5 (high)
+    - Impact (I) from 1 (low) to 5 (high)
+    
+    Return your response as a JSON object like this:
+    {{
+      "likelihood": 4,
+      "impact": 5
+    }}
+    
+
+    response = openai.ChatCompletion.create(
+        model="gpt-4",
+        messages=[{"role": "system", "content": prompt}]
+    )
+
+    try:
+        risk_data = eval(response["choices"][0]["message"]["content"])  # Convert response to dict
+        return risk_data.get("likelihood", 2), risk_data.get("impact", 2)
+    except Exception as e:
+        print("Error parsing AI response:", e)
+        return 2, 2  # Default values
+
+# Function to update database with AI-generated risk scores
+def update_risk_scores():
     try:
         conn = psycopg2.connect(**DB_PARAMS)
         cursor = conn.cursor()
 
-        # Fetch threats that do not have assigned risk values
+        # Get threats without likelihood/impact scores
         cursor.execute("SELECT id, threat_name FROM threats WHERE likelihood IS NULL OR impact IS NULL")
         threats = cursor.fetchall()
 
         for threat_id, threat_name in threats:
-            likelihood, impact = THREAT_RISK_MAP.get(threat_name, (2, 2))  # Default to (2,2) if unknown
+            likelihood, impact = get_ai_risk_score(threat_name)
             risk_score = likelihood * impact
 
-            # Update threat with risk assessment values
+            # Update the threats table
             cursor.execute("""
                 UPDATE threats
-                SET likelihood = %s, impact = %s
+                SET likelihood = %s, impact = %s, risk_level = %s
                 WHERE id = %s
-            """, (likelihood, impact, threat_id))
+            """, (likelihood, impact, risk_score, threat_id))
 
-            print(f"Updated Threat ID {threat_id}: {threat_name} (L={likelihood}, I={impact}, Risk={risk_score})")
+            print(f"Updated Threat {threat_name} → L={likelihood}, I={impact}, Risk={risk_score}")
 
         conn.commit()
         cursor.close()
@@ -48,6 +76,6 @@ def assign_risk_scores():
     except Exception as e:
         print(f"Database error: {e}")
 
-# Run the risk assessment update
+# Run the AI-based risk assessment
 if __name__ == "__main__":
-    assign_risk_scores()
+    update_risk_scores()
