@@ -1,10 +1,12 @@
 import openai
 import psycopg2
 import os
+import time
 from dotenv import load_dotenv
 
-# Configure OpenAI API (Ensure your API key is set as an environment variable)
-openai.api_key = "your_openai_api_key"
+# Load environment variables
+load_dotenv()
+openai.api_key = os.getenv("OPENAI_API_KEY")
 
 def fetch_threats():
     """
@@ -21,9 +23,6 @@ def fetch_threats():
     except Exception as e:
         print(f"Database Error: {e}")
         return []
-
-load_dotenv()
-openai.api_key = os.getenv("OPENAI_API_KEY")
 
 def test_ai_response():
     prompt = "Analyze threat: 'SQL Injection'. Return JSON with likelihood and impact (1-5)."
@@ -49,7 +48,6 @@ def assess_risk_with_gpt(threat_name):
             messages=[{"role": "user", "content": prompt}]
         )
         
-        # Extract likelihood and impact from the response
         gpt_output = response["choices"][0]["message"]["content"]
         likelihood = int(gpt_output.split("likelihood=")[1].split(",")[0].strip())
         impact = int(gpt_output.split("impact=")[1].strip())
@@ -81,7 +79,7 @@ def update_risk_scores():
                     "UPDATE threats SET risk_level = %s WHERE id = %s;",
                     (risk_score, threat_id)
                 )
-                print(f"Updated threat '{threat_name}' with risk score {risk_score}")
+                print(f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] Updated '{threat_name}' with risk score {risk_score}")
 
         conn.commit()
         cursor.close()
@@ -90,8 +88,11 @@ def update_risk_scores():
         print(f"Database Update Error: {e}")
 
 if __name__ == "__main__":
-    test_ai_response()
-    update_risk_scores()
+    while True:
+        update_risk_scores()
+        print("Sleeping for 10 minutes...\n")
+        time.sleep(600)  # 600 seconds = 10 minutes
+
 
 
 
