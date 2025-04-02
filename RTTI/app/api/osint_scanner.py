@@ -6,20 +6,16 @@ from email.mime.text import MIMEText
 from dotenv import load_dotenv
 from datetime import datetime
 
-"""
-change to recieve emails at desired address ::
+load_dotenv()
+HIBP_API_KEY = os.getenv("HIBP_API_KEY")
+VT_API_KEY = os.getenv("VT_API_KEY")
+DB_CONN = "dbname=threat_intel user=admin password=securepass"
+
 ALERT_EMAIL = "your@email.com"
 SMTP_SERVER = "smtp.yourprovider.com"
 SMTP_PORT = 587
 EMAIL_USER = "your@email.com"
 EMAIL_PASS = "yourpassword"
-"""
-
-load_dotenv()
-HIBP_API_KEY = os.getenv("HIBP_API_KEY")
-VT_API_KEY = os.getenv("VT_API_KEY")
-
-DB_CONN = "dbname=threat_intel user=admin password=securepass"
 
 def get_assets():
     try:
@@ -34,14 +30,14 @@ def get_assets():
         print("Error fetching assets:", e)
         return []
 
-def insert_threat(asset_id, threat_name, likelihood, impact):
+def insert_threat(asset_id, threat_name):
     try:
         conn = psycopg2.connect(DB_CONN)
         cur = conn.cursor()
         cur.execute("""
-            INSERT INTO threats (asset_id, threat_name, likelihood, impact)
-            VALUES (%s, %s, %s, %s);
-        """, (asset_id, threat_name, likelihood, impact))
+            INSERT INTO threats (asset_id, threat_name, risk_level)
+            VALUES (%s, %s, NULL);
+        """, (asset_id, threat_name))
         conn.commit()
         cur.close()
         conn.close()
@@ -76,7 +72,7 @@ def check_hibp(email, asset_id):
         if response.status_code == 200:
             breaches = response.json()
             for breach in breaches:
-                insert_threat(asset_id, f"HIBP Breach: {breach['Name']}", 3, 4)
+                insert_threat(asset_id, f"HIBP Breach: {breach['Name']}")
         elif response.status_code == 404:
             print(f"No breaches found for {email}")
         else:
@@ -93,25 +89,13 @@ def check_virustotal(query, asset_id):
         if response.status_code == 200:
             data = response.json()
             for item in data.get("data", []):
-                threat_name = item.get("attributes", {}).get("last_analysis_stats", {})
-                total_detections = threat_name.get("malicious", 0)
-                if total_detections > 0:
-                    insert_vulnerability(asset_id, f"VirusTotal detection for {query}", min(total_detections, 10))
+                stats = item.get("attributes", {}).get("last_analysis_stats", {})
+                if stats.get("malicious", 0) > 0:
+                    insert_threat(asset_id, f"VirusTotal detection for {query}")
         else:
             print(f"VirusTotal error for {query}: {response.status_code}")
     except Exception as e:
         print("VirusTotal API Error:", e)
-
-def run_osint_scan():
-    assets = get_assets()
-    for asset_id, name, asset_type in assets:
-        print(f"Scanning {asset_type}: {name}")
-        if asset_type == "People" and "@" in name:
-            check_hibp(name, asset_id)
-        elif asset_type in ["Hardware", "Software", "Processes", "Data"]:
-            check_virustotal(name, asset_id)
-            if asset_type == "Software":
-                check_cve_nvd(name, asset_id)
 
 def check_cve_nvd(software_name, asset_id):
     try:
@@ -124,7 +108,7 @@ def check_cve_nvd(software_name, asset_id):
                 severity = 5
                 try:
                     severity_data = item["cve"]["metrics"]["cvssMetricV31"][0]["cvssData"]
-                    severity = int(severity_data["baseScore"]) // 2
+                    severity = int(severity_data["baseScore"] // 2)
                 except:
                     pass
                 insert_vulnerability(asset_id, f"CVE: {cve_id} for {software_name}", severity)
@@ -133,61 +117,16 @@ def check_cve_nvd(software_name, asset_id):
     except Exception as e:
         print("NVD API Error:", e)
 
-def log_alerts_to_file(threats, log_file="alerts.log"):
-    with open(log_file, "a") as f:
-        for asset_id, threat_name, risk in threats:
-            f.write(f"{datetime.now()} | Asset ID {asset_id} | {threat_name} | Risk: {risk}\n")
-
-def send_email_alert(threats):
-    message = "\n".join([f"Asset ID {a} | Threat: {t} | Risk Level: {r}" for a, t, r in threats])
-    msg = MIMEText(f"🚨 High-Risk Threats Detected 🚨\n\n{message}")
-    msg['Subject'] = "Threat Alert"
-    msg['From'] = EMAIL_USER
-    msg['To'] = ALERT_EMAIL
-
-    try:
-        with smtplib.SMTP(SMTP_SERVER, SMTP_PORT) as server:
-            server.starttls()
-            server.login(EMAIL_USER, EMAIL_PASS)
-            server.send_message(msg)
-        print("📧 Email alert sent.")
-    except Exception as e:
-        print("Failed to send email alert:", e)
-
-def alert_high_risk_threats():
-    try:
-        conn = psycopg2.connect(DB_CONN)
-        cursor = conn.cursor()
-        cursor.execute("""
-            SELECT asset_id, threat_name, risk_level 
-            FROM threats 
-            WHERE risk_level >= 8;
-        """)
-        high_risk_threats = cursor.fetchall()
-        cursor.close()
-        conn.close()
-
-        if high_risk_threats:
-            print("\n🚨 HIGH-RISK THREATS DETECTED 🚨")
-            for asset_id, threat_name, risk in high_risk_threats:
-                print(f"[ALERT] Asset ID {asset_id} | Threat: {threat_name} | Risk Level: {risk}")
-            send_email_alert(high_risk_threats)
-            log_alerts_to_file(high_risk_threats)
-        else:
-            print("✅ No high-risk threats detected.")
-    except Exception as e:
-        print("Alert system error:", e)
-
-
+def run_osint_scan():
+    assets = get_assets()
+    for asset_id, name, asset_type in assets:
+        print(f"Scanning {asset_type}: {name}")
+        if asset_type == "People" and "@" in name:
+            check_hibp(name, asset_id)
+        elif asset_type in ["Hardware", "Software", "Processes", "Data"]:
+            check_virustotal(name, asset_id)
+            if asset_type == "Software":
+                check_cve_nvd(name, asset_id)
 
 if __name__ == "__main__":
     run_osint_scan()
-    alert_high_risk_threats()
-"""
-install dependencies :: pip install requests psycopg2-binary python-dotenv
-.env ex. :: 
-HIBP_API_KEY=your_hibp_key
-VT_API_KEY=your_virustotal_key
-ex. sql entry: INSERT INTO assets (name, asset_type, category, description)
-VALUES ('test@example.com', 'People', 'User Email', 'Example user email');
-"""
