@@ -44,6 +44,10 @@ def insert_threat(asset_id, threat_name):
         print(f"Inserted threat for asset {asset_id}: {threat_name}")
     except Exception as e:
         print("Error inserting threat:", e)
+    await client.query(
+      "INSERT INTO event_log (asset_id, action, threat_id, details) VALUES ($1, $2, $3, $4)",
+      [assetId, 'Threat Assessed', threatId, 'Risk Level updated to 9']
+    );
 
 def insert_vulnerability(asset_id, description, severity):
     try:
