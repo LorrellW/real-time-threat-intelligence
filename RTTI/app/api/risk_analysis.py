@@ -72,6 +72,18 @@ def update_risk_scores():
                     (risk_score, trend, mitigation, threat_id)
                 )
                 print(f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] Updated '{threat_name}' with risk score {risk_score}")
+                cursor.execute(
+                    """
+                    INSERT INTO event_log (asset_id, threat_id, action, details)
+                    VALUES (
+                        (SELECT asset_id FROM threats WHERE id = %s),
+                        %s,
+                        'Risk Assessment',
+                        %s
+                    );
+                    """,
+                    (threat_id, threat_id, f"Risk level updated to {risk_score}, mitigation: {mitigation}")
+                )
 
                 if risk_score >= 8:
                     notification.notify(
@@ -85,10 +97,7 @@ def update_risk_scores():
         conn.close()
     except Exception as e:
         print(f"Database Update Error: {e}")
-    await client.query(
-      "INSERT INTO event_log (asset_id, action, threat_id, details) VALUES ($1, $2, $3, $4)",
-      [assetId, 'Threat Assessed', threatId, 'Risk Level updated to 9']
-    );
+    
 
 if __name__ == "__main__":
     while True:
