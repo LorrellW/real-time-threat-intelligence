@@ -9,6 +9,7 @@ CREATE TABLE assets (
   category VARCHAR(50),
   description TEXT
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  audited BOOLEAN DEFAULT FALSE
 );
 
 CREATE TABLE tva_mapping (
