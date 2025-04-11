@@ -44,10 +44,19 @@ def insert_threat(asset_id, threat_name):
         print(f"Inserted threat for asset {asset_id}: {threat_name}")
     except Exception as e:
         print("Error inserting threat:", e)
-    await client.query(
-      "INSERT INTO event_log (asset_id, action, threat_id, details) VALUES ($1, $2, $3, $4)",
-      [assetId, 'Threat Assessed', threatId, 'Risk Level updated to 9']
-    );
+    def log_event(asset_id, threat_id, action, details):
+    try:
+        conn = psycopg2.connect(DB_CONN)
+        cur = conn.cursor()
+        cur.execute("""
+            INSERT INTO event_log (asset_id, threat_id, action, details)
+            VALUES (%s, %s, %s, %s);
+        """, (asset_id, threat_id, action, details))
+        conn.commit()
+        cur.close()
+        conn.close()
+    except Exception as e:
+        print("Error logging event:", e)
 
 def insert_vulnerability(asset_id, description, severity):
     try:
