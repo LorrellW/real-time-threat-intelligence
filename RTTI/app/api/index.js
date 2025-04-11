@@ -1,12 +1,15 @@
-// app/api/index.js
 import express from 'express';
-import client from '../db/db-connection.js'; // Make sure to include the .js extension
+import client from '../db/db-connection.js'; // PostgreSQL client
+import fs from 'fs';
+import path from 'path';
+import PDFDocument from 'pdfkit';
 
 const app = express();
-
 app.use(express.json()); // Middleware to parse JSON bodies
 
-// GET endpoint to retrieve all assets
+// ========== Asset Endpoints ==========
+
+// GET all assets
 app.get('/assets', async (req, res) => {
   try {
     const result = await client.query('SELECT * FROM assets');
@@ -17,7 +20,7 @@ app.get('/assets', async (req, res) => {
   }
 });
 
-// POST endpoint to create a new asset
+// POST new asset
 app.post('/assets', async (req, res) => {
   const { name, category, description } = req.body;
   try {
@@ -31,7 +34,7 @@ app.post('/assets', async (req, res) => {
   }
 });
 
-// PUT endpoint to update an existing asset by id
+// PUT update asset
 app.put('/assets/:id', async (req, res) => {
   const assetId = req.params.id;
   const { name, category, description } = req.body;
@@ -49,7 +52,7 @@ app.put('/assets/:id', async (req, res) => {
   }
 });
 
-// DELETE endpoint to remove an asset by id
+// DELETE asset
 app.delete('/assets/:id', async (req, res) => {
   const assetId = req.params.id;
   try {
@@ -66,10 +69,40 @@ app.delete('/assets/:id', async (req, res) => {
   }
 });
 
-// Start the server
+// ========== PDF Report Endpoint ==========
+
+app.get('/api/reports/threat', (req, res) => {
+  const doc = new PDFDocument();
+  const filePath = path.resolve('threat_report.pdf');
+  const stream = fs.createWriteStream(filePath);
+
+  doc.pipe(stream);
+
+  doc.fontSize(20).text('Threat Intelligence Report', { align: 'center' });
+  doc.moveDown();
+  doc.fontSize(14).text('Threat: SQL Injection  |  Risk Score: 25');
+  doc.moveDown();
+  doc.text('Threat: DDoS Attack  |  Risk Score: 30');
+  doc.moveDown();
+  doc.text('Threat: Cross-Site Scripting (XSS)  |  Risk Score: 18');
+
+  doc.end();
+
+  stream.on('finish', () => {
+    res.download(filePath, 'threat_report.pdf', (err) => {
+      if (err) {
+        console.error('Download error:', err);
+        res.status(500).json({ error: 'Failed to download report' });
+      }
+    });
+  });
+});
+
+// ========== Start Server ==========
+
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+  console.log(`✅ Server running at http://localhost:${PORT}`);
 });
 
 export default app;
