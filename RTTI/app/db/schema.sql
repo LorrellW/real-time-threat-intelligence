@@ -23,6 +23,15 @@ CREATE TABLE tva_mapping (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+CREATE TABLE event_log (
+  id SERIAL PRIMARY KEY,
+  asset_id INT,
+  action TEXT,
+  threat_id INT,
+  details TEXT,
+  performed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
 CREATE TABLE threats (
   id SERIAL PRIMARY KEY,
   asset_id INT REFERENCES assets(id),
