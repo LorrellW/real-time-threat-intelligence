@@ -85,6 +85,10 @@ def update_risk_scores():
         conn.close()
     except Exception as e:
         print(f"Database Update Error: {e}")
+    await client.query(
+      "INSERT INTO event_log (asset_id, action, threat_id, details) VALUES ($1, $2, $3, $4)",
+      [assetId, 'Threat Assessed', threatId, 'Risk Level updated to 9']
+    );
 
 if __name__ == "__main__":
     while True:
