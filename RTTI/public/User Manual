@@ -1,0 +1,70 @@
+Overview
+
+This platform enables cybersecurity teams to detect, assess, and respond to threats using integrated OSINT feeds, 
+AI-driven analysis, and automated defense mechanisms. It combines proactive blue teaming, behavioral anomaly detection, 
+and intelligent response into a centralized intelligence dashboard.
+
+System Architecture
+
+Database: PostgreSQL stores all threat, asset, and log data.
+Backend Services:
+anomaly_detector.py: Behavioral analysis and alerting
+threat_correlation_engine.py: Cross-system threat grouping
+remediation_engine.py: Auto-response to critical risks
+API Layer: REST endpoints for interacting with data
+Frontend (Remix): Web dashboard for managing assets and visualizing risks
+
+User Roles & Access Control
+
+Admin - Full permissions
+Analyst - View dashboards, run reports, invetigate alerts
+Automation - background access for scripts and AI components
+
+Using the Platform
+
+4.1 Asset Management
+Assets represent systems, users, or data points in the environment
+Add/edit assets via the dashboard or /api/assets endpoints
+4.2 Threat Detection
+OSINT tools (Shodan, HIBP, VirusTotal) feed into the threats table
+each threat has a risk score based on likelihood x impact
+4.3 Automated Risk Scoring
+GPT-4 models can re-evaluate threats based on updated context
+scores are automatically updated threats.risk_score
+4.4 Behavior Monitoring
+behavior_logs track events (logins, file access, etc.)
+the anomaly engine flags unusual patterns and logs them in event_log and threats
+4.5 Correlation Engine
+related threats (same asset, close timing, similar names) are grouped by threat_correlation_engine.py
+Groups are stored in threat_events
+4.6 Automated Remediation
+high-risk threats (risk level > 8) trigger the remediation engine
+actions include: 
+  Quarentine (simulated)
+  Token revocation
+  SOC notifications
+results are logged in remediation_actions
+
+Monitoring & Response
+all alerts and threat events can be viewed via the dashboard or queried via /api/threats and /api/event_log
+use /api/alerts for external integration or alert ingestion
+
+Maintenance & Updates
+Regularly pull OSINT updates via scheduled jobs
+Periodically run detection engines (anomaly, correlation, remediation)
+backup PostgreSQL database weekly
+
+Security & Data Integrity
+Access controlled via roles and tokens
+logs are immutable once written
+schema constraints prevent invalid risk scoring
+
+Troubleshooting
+Issue:                        Fix:
+no anomalies being flagged -- ensure behavior_logs is populated with diverse events
+No automated remediation occuring -- check thresholds and remediation success flags
+threats not correlated -- verify threat timestamps and names for similarity
+api errors -- inspect remix route logs and backend connectivity 
+
+
+
