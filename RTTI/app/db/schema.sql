@@ -23,6 +23,43 @@ CREATE TABLE tva_mapping (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+CREATE TABLE behavior_logs (
+  id SERIAL PRIMARY KEY,
+  asset_id INT REFERENCES assets(id) ON DELETE CASCADE,
+  user_id VARCHAR(255),
+  event_type VARCHAR(100),         -- e.g., "login_attempt", "file_access"
+  event_data JSONB,                -- structured data for AI analysis
+  recorded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE threat_events (
+  id SERIAL PRIMARY KEY,
+  asset_id INT REFERENCES assets(id) ON DELETE CASCADE,
+  threat_ids INT[],                -- Array of threat IDs that are correlated
+  correlation_score INT CHECK (correlation_score BETWEEN 1 AND 100),
+  detection_notes TEXT,
+  detected_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE remediation_actions (
+  id SERIAL PRIMARY KEY,
+  asset_id INT REFERENCES assets(id) ON DELETE CASCADE,
+  threat_id INT REFERENCES threats(id),
+  action_taken TEXT,              -- e.g., "quarantine", "revoke_token"
+  initiated_by VARCHAR(255),      -- system/analyst
+  success BOOLEAN,
+  notes TEXT,
+  performed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE mitre_mappings (
+  id SERIAL PRIMARY KEY,
+  threat_name VARCHAR(255),
+  tactic VARCHAR(255),
+  technique_id VARCHAR(50),
+  technique_name VARCHAR(255)
+);
+
 CREATE TABLE event_log (
   id SERIAL PRIMARY KEY,
   asset_id INT,
@@ -38,6 +75,11 @@ CREATE TABLE threats (
   threat_name VARCHAR(255),
   risk_level INT CHECK (risk_level BETWEEN 1 AND 10)
 );
+
+CREATE INDEX idx_behavior_logs_asset ON behavior_logs(asset_id);
+CREATE INDEX idx_event_log_asset ON event_log(asset_id);
+CREATE INDEX idx_threat_events_asset ON threat_events(asset_id);
+CREATE INDEX idx_remediation_actions_asset ON remediation_actions(asset_id);
 
 ALTER TABLE threats
 ADD COLUMN likelihood INT CHECK (likelihood BETWEEN 1 AND 5),
