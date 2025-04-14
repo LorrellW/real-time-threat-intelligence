@@ -1,0 +1,105 @@
+base URL: https://yourdomain.com/api
+authentication: Bearer Token (for protected endpoints)
+content-type: application/json
+status codes:
+  200 OK - request succeeded
+  201 Created - Resource created
+  400 Bad Request - Invalid input
+  401 Unauthorized - Missing/invalid token
+  500 Internal Sever Error - Server fault
+
+
+Assets
+GET /api/assets
+
+[
+  {
+    "id": 1,
+    "name": "Finance Server",
+    "asset_type": "Hardware",
+    "category": "Server",
+    "description": "Critical financial database",
+    "audited": false
+  }
+]
+
+POST /api/assets
+(create a new asset)
+
+POST /api/assets
+{
+  "name": "App Server",
+  "asset_type": "Software",
+  "category": "Web",
+  "description": "NodeJS Web Server"
+}
+
+Threats
+Get /api/threats
+(optional filters: asset_id, risk_level, threat_name)
+
+insert new threat record
+POST /api/threats
+{
+  "asset_id": 1,
+  "threat_name": "Shodan Open Port Detected",
+  "likelihood": 4,
+  "impact": 5
+}
+
+Behavior Logs
+POST /api/behavior
+
+Log a behavior event for anomaly detection.
+POST /api/behavior
+{
+  "asset_id": 2,
+  "user_id": "jdoe",
+  "event_type": "login_attempt",
+  "event_data": {
+    "location": "VPN",
+    "ip": "203.0.113.14",
+    "result": "failed"
+  }
+}
+
+Correlated Threat Events
+Retrieve threat correlation events
+GET /api/threat-events
+
+[
+  {
+    "id": 1,
+    "asset_id": 2,
+    "threat_ids": [5, 6, 7],
+    "correlation_score": 85,
+    "detection_notes": "Multiple failed logins + malware scan"
+  }
+]
+
+Remediation
+GET /api/remediation
+Trigger manual remediation action.
+POST /api/remediation/manual
+{
+  "asset_id": 1,
+  "threat_id": 22,
+  "action_taken": "quarantine",
+  "initiated_by": "admin",
+  "success": true,
+  "notes": "Isolated system from network"
+}
+
+Alerts
+send external threat alerts into the system
+POST /api/alerts
+{
+  "threat": "Phishing Email Detected",
+  "riskScore": 9
+}
+
+Response
+{ "message": "Alerts processed successfully." }
+
+System Health / Status
+GET /api/status
