@@ -1,4 +1,6 @@
 import React from "react";
+import lock from "../../public/pixelLock.png"
+
 
 function ThreatDashboard() {
   return (
@@ -8,7 +10,7 @@ function ThreatDashboard() {
           <div/> Real Time.
           <div/>Threat Intelligence.
         </h1>
-      </header>
+     </header>
 
       <form name="Login Form" className="flex flex-col justify-center gap-4 rounded-3xl border border-gray-200 p-4 dark:border-gray-700">
         <input className="text-black bg-gray-300 rounded-md" placeholder=" Email" />
