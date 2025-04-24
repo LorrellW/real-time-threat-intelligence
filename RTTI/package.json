@@ -15,6 +15,7 @@
     "@remix-run/react": "^2.15.3",
     "@remix-run/serve": "^2.15.3",
     "axios": "^1.8.4",
+    "docker": "^1.0.0",
     "ioredis": "^5.6.0",
     "isbot": "^4.1.0",
     "nodemailer": "^6.10.0",
