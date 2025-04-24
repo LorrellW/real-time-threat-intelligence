@@ -1,0 +1,18 @@
+config:
+  target: "http://localhost:3000"
+  phases:
+    - duration: 60         # 1-minute spike
+      arrivalRate: 20      # 20 new VUs every second
+scenarios:
+  - name: "Core API warm-up"
+    flow:
+      - get:
+          url: "/assets"
+      - post:
+          url: "/assets"
+          json:
+            name: "artillery_{{ $randomNumber(1,10000) }}"
+            category: "benchmark"
+            description: "perf test"
+      - get:
+          url: "/api/reports/threat"
