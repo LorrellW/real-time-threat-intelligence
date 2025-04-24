@@ -1,0 +1,56 @@
+# Deployment & Production-Readiness Checklist  
+_Real-Time Threat Intelligence (RTTI) • Week 9 – Task 3_
+
+| Stage | Item | Status |
+|-------|------|--------|
+| **1. Host preparation** | Ubuntu 22.04 LTS (fresh) & fully patched (`sudo apt update && sudo apt dist-upgrade`) | ☐ |
+|  | Non-root deploy user created (`adduser rtti && usermod -aG sudo rtti`) | ☐ |
+|  | SSH hardened <br>• Password logins disabled <br>• Fail2Ban enabled | ☐ |
+| 
+**2. Runtime stack** | Node 20 LTS installed via `nvm` | ☐ |
+|  | PM2 installed globally (`npm i -g pm2`) | ☐ |
+|  | PostgreSQL 15 installed + `rtti` DB & user created | ☐ |
+|
+**3. App deployment** | Project pulled to `/srv/rtti` (`git clone …`) | ☐ |
+|  | `.env.production` created (DB URL, JWT secret, etc.) | ☐ |
+|  | Dependencies installed (`npm ci --production`) | ☐ |
+|  | Database migrations run (`psql -f db/schema.sql`) | ☐ |
+|  | PM2 process started & saved <br>`pm2 start app/api/index.js --name rtti-api` <br>`pm2 save` | ☐ |
+|  | PM2 startup script generated (`pm2 startup systemd`) | ☐ |
+| 
+**4. Reverse proxy / TLS** | Nginx installed | ☐ |
+|  | `/etc/nginx/sites-available/rtti.conf` created: <br>```server { listen 80; server_name rtti.example.com; location / { proxy_pass http://127.0.0.1:3000; proxy_set_header X-Forwarded-For $remote_addr; proxy_set_header Host $host; } }``` | ☐ |
+|  | `ln -s sites-available/rtti.conf sites-enabled/` & `nginx -t && systemctl reload nginx` | ☐ |
+|  | **TLS via Certbot** (`certbot --nginx -d rtti.example.com`) | ☐ |
+| **5. Logging & monitoring** | PM2 logs rotated (`pm2 install pm2-logrotate`) | ☐ |
+|  | PostgreSQL daily dump via cron (`pg_dump rtti > /backups/$(date).sql.gz`) | ☐ |
+|  | UFW firewall: allow 22/tcp, 80/tcp, 443/tcp; deny all else | ☐ |
+|  | Fail2Ban jails for sshd & Nginx | ☐ |
+|  | Uptime & CPU alerts via `pm2 plus` **or** simple Node exporter + Grafana/Prometheus | ☐ |
+| **6. Validation** | `curl -I https://rtti.example.com/health` returns **200 OK** | ☐ |
+|  | ZAP quick-scan against prod URL – no new Medium/High findings | ☐ |
+|  | Artillery smoke test: 30 s @ 5 RPS – <1 % error rate | ☐ |
+| 
+**7. Documentation** | This checklist committed to repo | ☑ |
+|  | `/src/config/pm2 ecosystem.config.cjs` committed | ☑ |
+|  | `/docs/security_validation.md` & `/docs/performance_testing.md` updated with prod URL | ☑ |
+
+---
+
+## Quick commands reference
+
+```bash
+# Clone & build
+sudo -iu rtti
+git clone https://github.com/your-org/real-time-threat-intelligence.git /srv/rtti
+cd /srv/rtti && npm ci --omit=dev
+cp .env.example .env.production   # edit secrets
+
+# PostgreSQL
+sudo -u postgres createuser rtti && sudo -u postgres createdb rtti
+psql -U postgres -c "ALTER USER rtti WITH ENCRYPTED PASSWORD 'STRONGPASS';"
+psql -U rtti -d rtti -f db/schema.sql
+
+# PM2
+pm2 start app/api/index.js --name rtti-api
+pm2 install pm2-logrotate && pm2 save && pm2 startup systemd

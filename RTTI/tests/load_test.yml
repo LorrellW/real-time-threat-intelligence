@@ -1,0 +1,18 @@
+config:
+  target: "http://localhost:3000"  
+  phases:
+    - duration: 60        # 60-second spike
+      arrivalRate: 20     # 20 new virtual users per second
+  http:
+    timeout: 10000        # 10-s per request so PDF has time to finish
+scenarios:
+  - name: "Core API"
+    flow:
+      - get:  { url: "/assets" }
+      - post:
+          url: "/assets"
+          json:
+            name: "artillery_{{ $randomString(6) }}"
+            category: "benchmark"
+            description: "perf test"
+      - get:  { url: "/api/reports/threat" }
