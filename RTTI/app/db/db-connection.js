@@ -1,17 +1,24 @@
-// app/db/db-connection.js
-import pkg from 'pg';
+// db/db-connection.js
+import pkg from "pg";
 const { Client } = pkg;
 
-const client = new Client({
-  host: 'localhost',        // Your PostgreSQL server address
-  port: 5432,               // Default PostgreSQL port
-  database: 'threat_intel', // Your database name
-  user: 'threat_user',      // Your database user
-  password: 'yourStrongPassword', // Your database password
-});
+// Prefer DATABASE_URL (Render sets it), else use local settings
+const client = new Client(
+  process.env.DATABASE_URL
+    ? {
+        connectionString: process.env.DATABASE_URL,
+        ssl: { rejectUnauthorized: false }   // required on Render
+      }
+    : {
+        host: "localhost",
+        port: 5432,
+        database: "threat_intel",
+        user: "threat_user",
+        password: "yourStrongPassword"
+      }
+);
 
-client.connect()
-  .then(() => console.log('Connected to PostgreSQL!'))
-  .catch(err => console.error('Connection error', err.stack));
+await client.connect();
+console.log("✅ Connected to PostgreSQL");
 
 export default client;
