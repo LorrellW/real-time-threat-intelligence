@@ -1,6 +1,20 @@
 {
+  "functions": {
+    "source": "functions",
+    "ignore": [
+      "node_modules",
+      ".git",
+      "firebase-debug.log",
+      "firebase-debug.*.log",
+      "*.local"
+    ],
+    "predeploy": [
+      "npm --prefix \"$RESOURCE_DIR\" run build"
+    ]
+  },
   "hosting": {
-    "public": "RTTI/RTTI",
+    "site": "rtti-96e17",
+    "public": "public",
     "ignore": [
       "firebase.json",
       "**/.*",
@@ -8,8 +22,12 @@
     ],
     "rewrites": [
       {
+        "source": "/build/**",
+        "destination": "/build/index.html"
+      },
+      {
         "source": "**",
-        "destination": "/index.html"
+        "function": "remixServer"
       }
     ]
   }
