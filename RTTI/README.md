@@ -1,8 +1,7 @@
 # Real‑Time Threat Intelligence Dashboard
+![Screenshot 2025-04-30 222337](https://github.com/user-attachments/assets/98ad331b-35b0-4be0-a281-4016acf93f4d)
 
-- 📖 [Remix docs](https://remix.run/docs)
-
-Introduction & Project Objectives
+## Introduction & Project Objectives
 
 -This project aggregates vulnerability scan data from multiple sources and delivers actionable intelligence to security teams. Objectives:
 
@@ -37,10 +36,6 @@ npm start
 ```
 Deploy the contents of build/server and build/client to your host of choice.
 
-Styling
-
-This project uses Tailwind CSS—see tailwind.config.js. You can customize or replace with your preferred CSS framework; refer to the Vite docs for guidance.
-
 
 
 ### DIY
@@ -51,6 +46,8 @@ Make sure to deploy the output of `npm run build`
 
 - `build/server`
 - `build/client`
+
+- 📖 [Remix docs](https://remix.run/docs)
 
 ## Styling
 
