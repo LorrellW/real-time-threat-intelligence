@@ -1,0 +1,58 @@
+Walkthrough Guide:
+Step 1 — Access the Platform
+The system runs as a backend-first cybersecurity intelligence and remediation platform.
+
+Connect to the PostgreSQL database using psql or a web interface (such as pgAdmin) to view and manage assets, threats, and TVA mappings.
+
+Front-end dashboard may also connect to the same database for viewing threats and metrics.
+
+Step 2 — Registering and Managing Assets
+Assets represent critical systems, servers, endpoints, applications, or databases in the organization.
+
+Use the assets table to add new assets:
+
+Step 3 — Performing OSINT Scans and Gathering Threat Intelligence
+The platform uses integrated OSINT scripts to gather up-to-date public exposure data.
+
+the osint_scanner.py function performs lookups via Shodan, Have I been Pwned, and VirusTotal, then inserts the threats into a table
+
+Step 4 — Reviewing Threats and Prioritization
+The risk score is computed dynamically based on likelihood, impact, and AI assessments.
+
+Step 5 — AI Risk Analysis (Dynamic Risk Prioritization)
+AI-enhanced risk analysis uses GPT to:
+
+Recalculate likelihood and impact values based on context.
+
+Automatically update the tva_mapping risk scores to reflect urgency.
+
+New risk scores are calculated and threat priorities are updated accordingly.
+
+Step 6 — Automated Remediation (Responding to Critical Threats)
+Once threats are assessed, the platform can simulate or trigger automated responses.
+
+The system will:
+
+Identify critical/high-risk threats.
+
+Apply simulated remediation actions such as asset quarantine, IP blocklisting, token revocation, or SOC notification.
+
+Log actions into event_log for tracking.
+
+Step 7 — Generating Threat Reports
+running generate_report.py will:
+
+A summary of all assets and associated threats.
+
+Top critical threats and risk scores.
+
+Remediation actions taken.
+
+Recommendations for next steps.
+
+A markdown file threat_report.md will be generated.
+
+Step 8 — Auditing and Event Logs
+Use event_log to review all security actions:
+
+This table is useful for forensic analysis, audits, and compliance reviews.
